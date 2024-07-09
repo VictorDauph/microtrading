@@ -1,4 +1,5 @@
-﻿using microTrading.Models;
+﻿using microTrading.dto;
+using microTrading.Models;
 
 namespace microTrading.RepositoriesEF
 {
@@ -11,11 +12,12 @@ namespace microTrading.RepositoriesEF
             _dbContext = dbContext;
         }
 
-        public Active Add(Active active)
+        public Active Add(CreateActiveDto activeDto)
         {
-            _dbContext.Add(active);
+            Active activeToSave = new Active(activeDto.Symbol);
+            _dbContext.Add(activeToSave);
             _dbContext.SaveChanges();
-            return active;
+            return activeToSave;
         }
 
 

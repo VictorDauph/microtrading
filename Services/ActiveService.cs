@@ -1,4 +1,5 @@
-﻿using microTrading.Models;
+﻿using microTrading.dto;
+using microTrading.Models;
 using microTrading.RepositoriesEF;
 
 namespace microTrading.Services
@@ -10,9 +11,9 @@ namespace microTrading.Services
             _activeRepository = activeRepository;
         }
 
-        public Active addActive(Active active)
+        public Active addActive(CreateActiveDto activeDto)
         {
-           return _activeRepository.Add(active);
+           return _activeRepository.Add(activeDto);
 
         }
     }

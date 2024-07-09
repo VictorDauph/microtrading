@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using microTrading.dto;
 using microTrading.Models;
 using microTrading.Services;
 
@@ -24,9 +25,10 @@ namespace microTrading.Controllers
         }
 
         [HttpPost("/new")]
-        public Active AddNewActive(Active active)
+        public Active AddNewActive(CreateActiveDto activeDto)
         {
-            return _activeService.addActive(active);
+            Active activeSaved = _activeService.addActive(activeDto);
+            return activeSaved;
         }
     }
 }

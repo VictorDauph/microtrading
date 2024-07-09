@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace microTrading.Migrations
 {
     /// <inheritdoc />
-    public partial class exploBDD : Migration
+    public partial class dtoActive2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -12,8 +12,8 @@ using microTrading.Models;
 namespace microTrading.Migrations
 {
     [DbContext(typeof(MicroTradingContext))]
-    [Migration("20240709134001_exploBDD")]
-    partial class exploBDD
+    [Migration("20240709192622_dtoActive2")]
+    partial class dtoActive2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,7 +27,7 @@ namespace microTrading.Migrations
 
             modelBuilder.Entity("microTrading.Models.Active", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int?>("Id")
                         .HasColumnType("int")
                         .HasColumnName("id");
 
