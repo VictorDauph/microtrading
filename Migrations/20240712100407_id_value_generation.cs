@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace microTrading.Migrations
 {
     /// <inheritdoc />
-    public partial class dtoActive2 : Migration
+    public partial class id_value_generation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,8 @@ namespace microTrading.Migrations
                 name: "Actives",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     symbol = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: false)
                 },
                 constraints: table =>
@@ -27,7 +28,8 @@ namespace microTrading.Migrations
                 name: "Run_Perfomances",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RunStart = table.Column<DateTime>(type: "datetime", nullable: true),
                     RunStop = table.Column<DateTime>(type: "datetime", nullable: true),
                     idActive = table.Column<int>(type: "int", nullable: true)
@@ -46,7 +48,8 @@ namespace microTrading.Migrations
                 name: "value_records",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ActiveId = table.Column<int>(type: "int", nullable: false),
                     record_date = table.Column<DateTime>(type: "datetime", nullable: false),
                     value = table.Column<decimal>(type: "decimal(18,0)", nullable: false),

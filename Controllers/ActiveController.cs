@@ -18,13 +18,15 @@ namespace microTrading.Controllers
             _activeService = activeService;
         }
 
-        [HttpGet("/all")]
+        [HttpGet]
+        [Route("all")]
         public IEnumerable<Active> Get()
         {
-            return new List<Active>();
+            return _activeService.getAllActives();
         }
 
-        [HttpPost("/new")]
+        [HttpPost]
+        [Route("new")]
         public Active AddNewActive(CreateActiveDto activeDto)
         {
             Active activeSaved = _activeService.addActive(activeDto);

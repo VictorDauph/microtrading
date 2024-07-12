@@ -26,7 +26,6 @@ public partial class MicroTradingContext : DbContext
         modelBuilder.Entity<Active>(entity =>
         {
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.Symbol)
                 .HasMaxLength(10)
@@ -40,7 +39,6 @@ public partial class MicroTradingContext : DbContext
 
             entity.ToTable("Run_Perfomances");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.IdActive).HasColumnName("idActive");
             entity.Property(e => e.RunStart).HasColumnType("datetime");
             entity.Property(e => e.RunStop).HasColumnType("datetime");
@@ -57,7 +55,6 @@ public partial class MicroTradingContext : DbContext
             entity.HasIndex(e => e.ActiveId, "Symbol_Index");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.RecordDate)
                 .HasColumnType("datetime")

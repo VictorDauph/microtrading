@@ -25,8 +25,11 @@ namespace microTrading.Migrations
             modelBuilder.Entity("microTrading.Models.Active", b =>
                 {
                     b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -43,7 +46,10 @@ namespace microTrading.Migrations
             modelBuilder.Entity("microTrading.Models.RunPerfomance", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("IdActive")
                         .HasColumnType("int")
@@ -66,8 +72,11 @@ namespace microTrading.Migrations
             modelBuilder.Entity("microTrading.Models.ValueRecord", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ActiveId")
                         .HasColumnType("int");

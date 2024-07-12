@@ -13,8 +13,13 @@ namespace microTrading.Services
 
         public Active addActive(CreateActiveDto activeDto)
         {
-           return _activeRepository.Add(activeDto);
+            return _activeRepository.Add(activeDto);
 
+        }
+
+        public IEnumerable<Active> getAllActives()
+        {
+            return _activeRepository.GetAll();
         }
     }
 }

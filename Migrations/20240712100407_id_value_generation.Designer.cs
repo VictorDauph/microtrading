@@ -12,8 +12,8 @@ using microTrading.Models;
 namespace microTrading.Migrations
 {
     [DbContext(typeof(MicroTradingContext))]
-    [Migration("20240709192622_dtoActive2")]
-    partial class dtoActive2
+    [Migration("20240712100407_id_value_generation")]
+    partial class id_value_generation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,8 +28,11 @@ namespace microTrading.Migrations
             modelBuilder.Entity("microTrading.Models.Active", b =>
                 {
                     b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -46,7 +49,10 @@ namespace microTrading.Migrations
             modelBuilder.Entity("microTrading.Models.RunPerfomance", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("IdActive")
                         .HasColumnType("int")
@@ -69,8 +75,11 @@ namespace microTrading.Migrations
             modelBuilder.Entity("microTrading.Models.ValueRecord", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ActiveId")
                         .HasColumnType("int");

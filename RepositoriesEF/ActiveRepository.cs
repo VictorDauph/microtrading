@@ -20,6 +20,11 @@ namespace microTrading.RepositoriesEF
             return activeToSave;
         }
 
+        public IEnumerable<Active> GetAll()
+        {
+            return _dbContext.Actives.ToList();
+        }
+
 
 
 

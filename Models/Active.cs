@@ -13,7 +13,9 @@ public partial class Active
     {
         Symbol = symbol;
     }
-    public int Id { get; set; }
+
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int? Id { get; set; }
 
     public string Symbol { get; set; } = null!;
 
