@@ -19,6 +19,7 @@ builder.Services.AddDbContext<MicroTradingContext>(options =>
 //ajouter tous les services injectables à cette liste
 builder.Services.AddScoped<ActiveService>();
 builder.Services.AddScoped<ActiveRepository>();
+builder.Services.AddScoped<WebSocketClientService>();
 
 var app = builder.Build();
 
