@@ -1,34 +1,49 @@
-﻿using System.Net.WebSockets;
+﻿using microTrading.utils;
+using System.Net.WebSockets;
 using System.Text;
-using System;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace microTrading.Services
 {
     public class WebSocketClientService
     {
-        ClientWebSocket? ws =null;
-        public WebSocketClientService() { }
+        //Faut ouvrir et fermer une connection à chaque requête visiblement...
+        string uri = EnvironmentUtils.getEnvironmentVariable("API_URI");
+        string userId = EnvironmentUtils.getEnvironmentVariable("API_USERID");
+        string password = EnvironmentUtils.getEnvironmentVariable("API_PWD");
 
+
+        public WebSocketClientService()
+        {
+        }
         public void ListenToTestServer()
         {
             String uri = "ws://localhost:6666/ws";
             connectWebSocket(uri,"","");
         }
 
-        async public void LoginToXTBDemoServer() {
-            string uri = "wss://ws.xtb.com/demo";
-            string userId = "16593269";
-            string password = "Q53Kie";
-            await connectWebSocket(uri, userId,password);
-            
+        public async void LoginToXTBDemoServer() {
+
+            ClientWebSocket? ws =await connectWebSocket(uri,userId,password);
+            if (ws != null)
+            {
+                ListenToAnswer(ws);
+            }
+        }
+        async public void getAllSymbols()
+        {
+            ClientWebSocket? ws = await connectWebSocket(uri, userId, password);
+            if (ws != null)
+            {
+                sendSymbolRequest(ws);
+                ListenToAnswer(ws);
+            }
 
         }
 
-        async private Task<ClientWebSocket?> connectWebSocket(string uri,string userId, string password)
+        async private Task<ClientWebSocket?> connectWebSocket(string uri, string userId, string password)
         {
-            ws = new ClientWebSocket();
+            ClientWebSocket ws = new ClientWebSocket();
 
             //Web Socket Client
             Console.Title = "Client WebSocket";
@@ -41,10 +56,56 @@ namespace microTrading.Services
                 Console.WriteLine("Connection to endpoint failed");
                 return null;
             }
+            else
+            {
+                login(ws, userId, password);
+            }
 
-            await login(userId, password);
+            return ws;
+        }
 
+        private void login(ClientWebSocket ws, string userId, string password)
+        {
+            var body = new
+            {
+                command = "login",
+                arguments = new
+                {
+                    userId = userId,
+                    password = password
+                }
+            };
 
+            sendRequest(body,ws);
+
+        }
+
+        public void sendSymbolRequest(ClientWebSocket ws)
+        {
+            var body = new
+            {
+                command = "getAllSymbols",
+            };
+
+            sendRequest(body, ws);
+
+        }
+        
+
+        async public void sendRequest(Object body, ClientWebSocket ws)
+        {
+            string jsonBody = JsonSerializer.Serialize(body);
+            var bytes = Encoding.UTF8.GetBytes(jsonBody);
+            var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
+
+            if (ws != null)
+            {
+                await ws.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+
+        public async void ListenToAnswer(ClientWebSocket ws)
+        {
             var buffer = new byte[256];
             while (ws.State == WebSocketState.Open)
             {
@@ -60,33 +121,6 @@ namespace microTrading.Services
                 }
             }
             Console.WriteLine("end of while loop");
-            return ws;
-            
-        }
-
-        async private Task<string> login(string userId, string password)
-        {
-            var body = new
-            {
-                command = "login",
-                arguments = new
-                {
-                    userId = "16593269",
-                    password = "Q53Kie"
-                }
-            };
-
-            string jsonBody = JsonSerializer.Serialize(body);
-            var bytes = Encoding.UTF8.GetBytes(jsonBody);
-            var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
-
-            if (ws != null)
-            {
-                await ws.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
-                return "logged in";
-            }
-            return "not logged in";
-
         }
     }
 }

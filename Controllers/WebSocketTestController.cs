@@ -14,20 +14,21 @@ namespace microTrading.Controllers
             _clientService = clientService;
         }
 
+        /*
         [HttpGet]
         [Route("/testServer")]
         public void testConnection()
         {
             _clientService.ListenToTestServer();
         }
+        */
 
-        /*
         [HttpGet]
-        [Route("/loginXTB")]
+        [Route("/symbols")]
         public void XtbConnection()
         {
-            _clientService.LoginToXTBServer() ;
+            _clientService.getAllSymbols() ;
         }
-        */
+        
     }
 }
