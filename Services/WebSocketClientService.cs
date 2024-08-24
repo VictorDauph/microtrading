@@ -16,19 +16,20 @@ namespace microTrading.Services
         public WebSocketClientService()
         {
         }
+        /*
         public void ListenToTestServer()
         {
             String uri = "ws://localhost:6666/ws";
             connectWebSocket(uri,"","");
         }
+        */
 
         public async void LoginToXTBDemoServer() {
 
             ClientWebSocket? ws =await connectWebSocket(uri,userId,password);
-            if (ws != null)
-            {
-                ListenToAnswer(ws);
-            }
+            await ListenToAnswer(ws,HandleMessage);
+            //await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+           
         }
         async public void getAllSymbols()
         {
@@ -36,7 +37,7 @@ namespace microTrading.Services
             if (ws != null)
             {
                 sendSymbolRequest(ws);
-                ListenToAnswer(ws);
+                await ListenToAnswer(ws,HandleMessage);
             }
 
         }
@@ -104,23 +105,65 @@ namespace microTrading.Services
             }
         }
 
+        /*
         public async void ListenToAnswer(ClientWebSocket ws)
         {
+            //comment retourner les données? avec un stream?
+            // demande à  chatGPT avec ça: récupérer dans un stream les résultats reçus via un ClientWebSocket dans le framework dotnet
             var buffer = new byte[256];
-            while (ws.State == WebSocketState.Open)
+
+
+            do
             {
                 var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+
                     Console.WriteLine("fermeture websocket normale");
                 }
-                else
+
+                Console.WriteLine(Encoding.ASCII.GetString(buffer, 0, result.Count));
+            } while (ws.State == WebSocketState.Open);
+            Console.WriteLine("end of while loop");
+        }
+        */
+        static async Task ListenToAnswer(ClientWebSocket ws, Action<string> messageHandler)
+        {
+            // Définir la taille du buffer pour la réception des messages
+            var buffer = new byte[1024 * 4];
+
+            // Lire les messages en boucle
+            while (ws.State == WebSocketState.Open)
+            {
+                // Utiliser un MemoryStream local pour construire le message complet
+                using (var memoryStream = new MemoryStream())
                 {
-                    Console.WriteLine(Encoding.ASCII.GetString(buffer, 0, result.Count));
+                    WebSocketReceiveResult result;
+                    do
+                    {
+                        // Lire les données reçues
+                        result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                        // Écrire les données reçues dans le MemoryStream
+                        memoryStream.Write(buffer, 0, result.Count);
+
+                    } while (!result.EndOfMessage); // Continuer à lire jusqu'à la fin du message
+
+                    // Convertir les données en chaîne de caractères
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+                    string message = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    // Appeler le gestionnaire de messages pour traiter le message reçu
+                    messageHandler(message);
                 }
             }
-            Console.WriteLine("end of while loop");
+        }
+
+        static void HandleMessage(string message)
+        {
+            // Logique de traitement des messages
+            Console.WriteLine("Traitement du message : " + message);
+            // Par exemple, vous pouvez analyser le message JSON ici, ou déclencher une autre action
         }
     }
 }

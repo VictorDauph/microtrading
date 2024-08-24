@@ -12,12 +12,18 @@ namespace microTrading.RepositoriesEF
             _dbContext = dbContext;
         }
 
-        public Active Add(CreateActiveDto activeDto)
+        public Active AddSingleFromDto(CreateActiveDto activeDto)
         {
             Active activeToSave = new Active(activeDto.Symbol);
             _dbContext.Add(activeToSave);
             _dbContext.SaveChanges();
             return activeToSave;
+        }
+
+        public void AddActiveFromSymbol(string symbol) {
+            Active activeToSave = new Active(symbol);
+            _dbContext.Add(activeToSave);
+            _dbContext.SaveChanges();
         }
 
         public IEnumerable<Active> GetAll()
