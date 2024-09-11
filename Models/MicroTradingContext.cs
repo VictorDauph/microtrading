@@ -60,9 +60,6 @@ public partial class MicroTradingContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("record_date");
             entity.Property(e => e.RunId).HasColumnName("runId");
-            entity.Property(e => e.Value)
-                .HasColumnType("decimal(18, 0)")
-                .HasColumnName("value");
 
             entity.HasOne(d => d.Active).WithMany(p => p.ValueRecords)
                 .HasForeignKey(d => d.ActiveId)

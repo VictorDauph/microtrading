@@ -20,6 +20,8 @@ builder.Services.AddDbContext<MicroTradingContext>(options =>
 builder.Services.AddScoped<ActiveService>();
 builder.Services.AddScoped<ActiveRepository>();
 builder.Services.AddScoped<WebSocketClientService>();
+builder.Services.AddScoped<MessageHandlersService>();
+builder.Services.AddScoped<ValueRecordService>();
 
 var app = builder.Build();
 

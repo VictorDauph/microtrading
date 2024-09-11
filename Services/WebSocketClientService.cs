@@ -1,72 +1,98 @@
-﻿using microTrading.utils;
+﻿
+using Microsoft.AspNetCore.Connections;
+using microTrading.Classes;
+using microTrading.dto;
+using microTrading.Models;
+using microTrading.RepositoriesEF;
+using microTrading.utils;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+
 
 namespace microTrading.Services
 {
     public class WebSocketClientService
     {
+        ActiveRepository _activeRepository;
+        MessageHandlersService _messageHandlersService;
+
         //Faut ouvrir et fermer une connection à chaque requête visiblement...
         string uri = EnvironmentUtils.getEnvironmentVariable("API_URI");
         string userId = EnvironmentUtils.getEnvironmentVariable("API_USERID");
         string password = EnvironmentUtils.getEnvironmentVariable("API_PWD");
 
-
-        public WebSocketClientService()
+        List<MicroTradingConnectionHandler> connectionHandlers = [];
+        
+        public WebSocketClientService(ActiveRepository activeRepository, MessageHandlersService messageHandlersService)
         {
+            _activeRepository = activeRepository;
+            _messageHandlersService = messageHandlersService;
         }
-        /*
-        public void ListenToTestServer()
-        {
-            String uri = "ws://localhost:6666/ws";
-            connectWebSocket(uri,"","");
-        }
-        */
 
         public async void LoginToXTBDemoServer() {
 
-            ClientWebSocket? ws =await connectWebSocket(uri,userId,password);
-            await ListenToAnswer(ws,HandleMessage);
-            //await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
-           
-        }
-        async public void getAllSymbols()
-        {
-            ClientWebSocket? ws = await connectWebSocket(uri, userId, password);
-            if (ws != null)
+            MicroTradingConnectionHandler? connectionHandler = await connectWebSocket(uri, userId, password);
+            if (connectionHandler != null && connectionHandler._ws != null)
             {
-                sendSymbolRequest(ws);
-                await ListenToAnswer(ws,HandleMessage);
+                await ListenToAnswer(connectionHandler, _messageHandlersService.HandleGenericMessage);
             }
+        }
+        async public Task<string> getAllSymbols()
+        {
 
+            MicroTradingConnectionHandler? connectionHandler = await connectWebSocket(uri, userId, password);
+            if (connectionHandler != null && connectionHandler._ws != null)
+            {
+                sendSymbolRequest(connectionHandler, []);
+                await ListenToAnswer(connectionHandler, _messageHandlersService.HandleGenericMessage);
+                return "ok";
+            }
+            return "ws broken";
         }
 
-        async private Task<ClientWebSocket?> connectWebSocket(string uri, string userId, string password)
+        async public Task<string> getChartLast(GetChartLastRequestDto dto)
+        {
+
+            MicroTradingConnectionHandler? connectionHandler = await connectWebSocket(uri, userId, password);
+            if (connectionHandler != null && connectionHandler._ws != null)
+            {
+                sendChartLastRequest(connectionHandler,dto);
+               await ListenToAnswer(connectionHandler, _messageHandlersService.HandleGetLastChartMessage);
+                return "ok";
+            }
+            return "ws broken";
+        }
+
+        async private Task<MicroTradingConnectionHandler?> connectWebSocket(string uri, string userId, string password)
         {
             ClientWebSocket ws = new ClientWebSocket();
+            ClientWebSocket wsStream = new ClientWebSocket();
+            MicroTradingConnectionHandler connectionHandler = new MicroTradingConnectionHandler(ws,wsStream);
+
 
             //Web Socket Client
             Console.Title = "Client WebSocket";
 
             await ws.ConnectAsync(new Uri(uri), CancellationToken.None);
-            
+            await wsStream.ConnectAsync(new Uri(uri+"Stream"), CancellationToken.None);
 
-            if (ws == null)
+
+            if (connectionHandler._ws== null)
             {
                 Console.WriteLine("Connection to endpoint failed");
                 return null;
             }
             else
             {
-                login(ws, userId, password);
+                login(connectionHandler, userId, password);
             }
 
-            return ws;
+            return connectionHandler;
         }
 
-        private void login(ClientWebSocket ws, string userId, string password)
-        {
+        private void login(MicroTradingConnectionHandler connectionHandler, string userId, string password)
+        { 
             var body = new
             {
                 command = "login",
@@ -77,93 +103,115 @@ namespace microTrading.Services
                 }
             };
 
-            sendRequest(body,ws);
+            sendRequest(body, connectionHandler);
 
         }
 
-        public void sendSymbolRequest(ClientWebSocket ws)
+        public void sendSymbolRequest(MicroTradingConnectionHandler connectionHandler, List<string>? arguments )
         {
             var body = new
             {
                 command = "getAllSymbols",
             };
 
-            sendRequest(body, ws);
+            sendRequest(body, connectionHandler);
 
         }
-        
 
-        async public void sendRequest(Object body, ClientWebSocket ws)
+        public void sendChartLastRequest(MicroTradingConnectionHandler connectionHandler, GetChartLastRequestDto dto)
+        {
+            var body = new
+            {
+                command = "getChartLastRequest",
+                arguments = new
+                {
+                    info = new
+                    {
+                        period = dto.period,
+                        start = new DateTimeOffset((DateTime)dto.start).ToUnixTimeMilliseconds(),
+                        symbol = dto.symbol,
+                    }
+                }
+            };
+            sendRequest(body, connectionHandler);
+
+        }
+
+        async public void sendRequest(Object body, MicroTradingConnectionHandler connectionHandler)
         {
             string jsonBody = JsonSerializer.Serialize(body);
             var bytes = Encoding.UTF8.GetBytes(jsonBody);
             var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
 
-            if (ws != null)
+            if (connectionHandler._ws != null)
             {
-                await ws.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
+                await connectionHandler._ws.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
             }
         }
-
-        /*
-        public async void ListenToAnswer(ClientWebSocket ws)
+        public async Task<string> ListenToAnswer(
+    MicroTradingConnectionHandler connectionHandler,
+    Func<MicroTradingConnectionHandler, string, string> messageHandler,
+    CancellationToken cancellationToken = default)
         {
-            //comment retourner les données? avec un stream?
-            // demande à  chatGPT avec ça: récupérer dans un stream les résultats reçus via un ClientWebSocket dans le framework dotnet
-            var buffer = new byte[256];
-
-
-            do
-            {
-                var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-
-                    Console.WriteLine("fermeture websocket normale");
-                }
-
-                Console.WriteLine(Encoding.ASCII.GetString(buffer, 0, result.Count));
-            } while (ws.State == WebSocketState.Open);
-            Console.WriteLine("end of while loop");
-        }
-        */
-        static async Task ListenToAnswer(ClientWebSocket ws, Action<string> messageHandler)
-        {
-            // Définir la taille du buffer pour la réception des messages
+            // Define the buffer size for receiving messages
             var buffer = new byte[1024 * 4];
+            var timeout = TimeSpan.FromSeconds(5); // Set a timeout duration (10 seconds)
 
-            // Lire les messages en boucle
-            while (ws.State == WebSocketState.Open)
+            // Read messages in a loop
+            while (connectionHandler._ws.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
             {
-                // Utiliser un MemoryStream local pour construire le message complet
+                WebSocketReceiveResult result;
                 using (var memoryStream = new MemoryStream())
                 {
-                    WebSocketReceiveResult result;
-                    do
+                    try
                     {
-                        // Lire les données reçues
-                        result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        // Start the receive task
+                        var receiveTask = connectionHandler._ws.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 
-                        // Écrire les données reçues dans le MemoryStream
-                        memoryStream.Write(buffer, 0, result.Count);
+                        // Wait for either the receive task to complete or the timeout
+                        if (await Task.WhenAny(receiveTask, Task.Delay(timeout, cancellationToken)) == receiveTask)
+                        {
+                            // ReceiveAsync completed successfully before the timeout
+                            result = receiveTask.Result;
 
-                    } while (!result.EndOfMessage); // Continuer à lire jusqu'à la fin du message
+                            // Write the received data to the MemoryStream
+                            memoryStream.Write(buffer, 0, result.Count);
 
-                    // Convertir les données en chaîne de caractères
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-                    string message = Encoding.UTF8.GetString(memoryStream.ToArray());
+                            // Continue receiving if the message is incomplete
+                            while (!result.EndOfMessage && connectionHandler._ws.State == WebSocketState.Open)
+                            {
+                                result = await connectionHandler._ws.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                                memoryStream.Write(buffer, 0, result.Count);
+                            }
 
-                    // Appeler le gestionnaire de messages pour traiter le message reçu
-                    messageHandler(message);
+                            // Convert the data to a string
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+                            string message2 = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                            // Call the message handler to process the received message
+                            messageHandler(connectionHandler, message2);
+                        }
+                        else
+                        {
+                            // The receive task timed out
+                            Console.WriteLine("ReceiveAsync operation timed out.");
+                            break; // Optionally, you can break or retry based on your logic
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Handle task cancellation (from timeout or cancellation token)
+                        break;
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        // Handle WebSocket errors (like disconnection)
+                        Console.WriteLine($"WebSocket error: {ex.Message}");
+                        break;
+                    }
                 }
             }
-        }
-
-        static void HandleMessage(string message)
-        {
-            // Logique de traitement des messages
-            Console.WriteLine("Traitement du message : " + message);
-            // Par exemple, vous pouvez analyser le message JSON ici, ou déclencher une autre action
+            return "ok";
         }
     }
 }

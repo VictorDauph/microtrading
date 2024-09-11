@@ -12,10 +12,12 @@ namespace microTrading.Controllers
     {
 
         private readonly ActiveService _activeService;
+        private readonly WebSocketClientService _clientService;
 
-        public ActiveController(ActiveService activeService)
+        public ActiveController(ActiveService activeService, WebSocketClientService clientService)
         {
             _activeService = activeService;
+            _clientService = clientService;
         }
 
         [HttpGet]
@@ -27,10 +29,26 @@ namespace microTrading.Controllers
 
         [HttpPost]
         [Route("new")]
-        public Active AddNewActive(CreateActiveDto activeDto)
+        public Active AddNewActive(ActiveDto activeDto)
         {
             Active activeSaved = _activeService.addActive(activeDto);
             return activeSaved;
+        }
+
+        [HttpGet]
+        [Route("/symbols")]
+        public async Task<string> XtbConnection()
+        {
+            return await _clientService.getAllSymbols();
+
+        }
+
+        [HttpPost]
+        [Route("getChartLastRequest")]
+        public async Task<string> getChartLastrequest(GetChartLastRequestDto dto)
+        {
+            await _activeService.getChartLastRequest(dto);
+            return "ok";
         }
     }
 }

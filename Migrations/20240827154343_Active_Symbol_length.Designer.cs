@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using microTrading.Models;
 
@@ -11,9 +12,11 @@ using microTrading.Models;
 namespace microTrading.Migrations
 {
     [DbContext(typeof(MicroTradingContext))]
-    partial class MicroTradingContextModelSnapshot : ModelSnapshot
+    [Migration("20240827154343_Active_Symbol_length")]
+    partial class Active_Symbol_length
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,15 +84,6 @@ namespace microTrading.Migrations
                     b.Property<int>("ActiveId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("CloseValue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MedianPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("OHLCAverage")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("RecordDate")
                         .HasColumnType("datetime")
                         .HasColumnName("record_date");
@@ -98,11 +92,9 @@ namespace microTrading.Migrations
                         .HasColumnType("int")
                         .HasColumnName("runId");
 
-                    b.Property<decimal>("TypicalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("WeightedClosePrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<decimal>("Value")
+                        .HasColumnType("decimal(18, 0)")
+                        .HasColumnName("value");
 
                     b.HasKey("Id");
 
