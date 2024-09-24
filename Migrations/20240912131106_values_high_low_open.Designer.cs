@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using microTrading.Models;
 
@@ -11,9 +12,11 @@ using microTrading.Models;
 namespace microTrading.Migrations
 {
     [DbContext(typeof(MicroTradingContext))]
-    partial class MicroTradingContextModelSnapshot : ModelSnapshot
+    [Migration("20240912131106_values_high_low_open")]
+    partial class values_high_low_open
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -21,7 +21,7 @@ public partial class ValueRecord
     // (shift from open price)
     public decimal LowValue { get; set; }
 
-    //(High+Low+Close)/3(High+Low+Close)/3
+    //(High+Low+Close)/3
     public decimal TypicalPrice { get; set; }
 
     //(High+Low+2×Close)/4

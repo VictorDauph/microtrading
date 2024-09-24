@@ -22,6 +22,9 @@ builder.Services.AddScoped<ActiveRepository>();
 builder.Services.AddScoped<WebSocketClientService>();
 builder.Services.AddScoped<MessageHandlersService>();
 builder.Services.AddScoped<ValueRecordService>();
+builder.Services.AddScoped<ValueRecordRepository>();
+builder.Services.AddScoped<RunService>();
+builder.Services.AddScoped<RunRepository>();
 
 var app = builder.Build();
 

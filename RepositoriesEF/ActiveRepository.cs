@@ -32,6 +32,9 @@ namespace microTrading.RepositoriesEF
             return _dbContext.Actives.Any(active => active.Symbol == symbol);
         }
 
+        public Active getOneFromSymbol(string symbol) {
+            return _dbContext.Actives.FirstOrDefault(active => active.Symbol == symbol);
+        }
         public IEnumerable<Active> GetAll()
         {
             return _dbContext.Actives.ToList();
